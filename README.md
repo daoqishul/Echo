@@ -1,10 +1,4 @@
 # Echo —— 网易云音乐第三方客户端（WinUI 3 版）
-
-基于 [GuitaristRin/Ncrust](https://github.com/GuitaristRin/Ncrust) 参考仓库（`windows/` 目录，UWP + WinUI 2）
-移植到 **WinUI 3（Windows App SDK 1.8）** 的第三方网易云音乐客户端。协议层（weapi / eapi / xeapi 加密、
-二维码登录、音质阶梯、播放队列、歌词、云收藏同步、播放上报）原样复用参考仓库的 `Ncrust.Core`
-（netstandard2.0，397 个单元测试全部通过）。
-
 ## 功能
 
 - **侧边栏**：搜索框、首页、「**收藏的音乐**」分区（我喜欢的音乐 / 收藏的专辑 / 收藏的歌单）、
@@ -29,56 +23,7 @@
 - **下载与本地音乐**：右键歌曲 → 下载（音质选择 + 路径选择，https 直连）；本地音乐页自动
   扫描文件夹音频（TagLib 标签识别），负 id 直连本地文件播放。
 
-## 构建（无需 Visual Studio）
 
-需要：Windows 10 1809+ x64、`.NET 8 SDK`。所有依赖（Windows App SDK、WebView2、QRCoder）均来自 NuGet，
-构建自带 Windows App SDK 运行时（自包含），目标机无需安装任何运行时。
-
-```powershell
-# 安装 .NET 8 SDK（用户级，无需管理员）后：
-dotnet restore Ncrust.WinUI3.sln
-dotnet build  Ncrust.WinUI3.sln -c Release
-
-# 运行：
-.\src\Ncrust.App\bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\Echo.exe
-
-# Core 单元测试（397 个）：
-dotnet test tests\Ncrust.Core.Tests -c Release
-```
-
-产物为**非打包（unpackaged）** 单目录应用，整个输出目录拷走即可分发。
-数据与设置存 `%LOCALAPPDATA%\Ncrust\`（`settings.json`、`session.dat`（DPAPI 加密登录态）、
-`playback_state.json`、音乐库、歌词缓存）；崩溃日志在 `%LOCALAPPDATA%\Ncrust\logs\crash.log`。
-
-## 从 UWP / WinUI 2 移植的主要改动
-
-| 参考仓库（UWP） | 本仓库（WinUI 3） |
-|---|---|
-| `Windows.UI.Xaml.*` | `Microsoft.UI.Xaml.*`（脚本化重命名 + 手工适配） |
-| `CoreDispatcher` | `DispatcherQueue`（`App.UiQueue`） |
-| `ApplicationData.LocalSettings / LocalFolder` | `%LOCALAPPDATA%\Ncrust\settings.json` + 文件存储 |
-| `PasswordVault` | DPAPI（`ProtectedData`，当前用户）加密文件 |
-| `CoreApplicationViewTitleBar` | `AppWindow.TitleBar` + `Window.SetTitleBar` |
-| `ApplicationView.TryEnterFullScreenMode` | `AppWindow.SetPresenter(FullScreen)` |
-| `Package.Current.Id.Version` | 程序集版本 |
-| `MediaBinder + SetUri` 延迟取链 | `MediaSource.CreateFromUri`（惰性打开语义相同） |
-| `MediaPlaybackList` 滑动窗口 | 单条目播放（MediaEnded 手动推进，见下） |
-| `Ncrust.Audio`（UWP 运行时组件） | CsWinRT 组件 + SxS `activatableClass` 免注册激活 |
-| `ControlsResourcesVersion=Version1` | WASDK 1.8 已移除该开关，由 Kanesumi 资源覆盖压回直角 |
-
-## 已知事项（本机实测）
-
-- **播放 URL 统一改写 `http://` → `https://`**：本机 Media Foundation 的网络源打不开
-  网易 CDN 的明文 http 流（`SourceNotSupportedError` / 卡 Opening），https 稳定播放完整歌曲
-  （网易 CDN 的 `cdntag=os_web` 本就是 web 身份，签名 URL 两侧通用）。
-- **MediaPlaybackList 的网络源在本机不稳定**：故引擎改为单条目播放
-  （`MediaPlayer.Source` 直挂 + `MediaEnded` 手动推进），切歌有短暂间隙；
-  「无缝播放」设置项保留但当前不生效（Android 端默认也是关闭的实验特性）。
-- **均衡器（CsWinRT 音效组件）默认禁用**：`IBasicAudioEffect` 在个别系统的 Media Foundation
-  上处理音频帧时会原生崩溃（无托管日志）。设置页会提示「当前系统不支持挂载音效」，
-  音乐照常播放。恢复启用见 `PlaybackHost.Create()` 中的 `DisableEqualizer` 开关。
-- 登录层打开时会清除 WebView2 的残留 cookie 再导航，避免「一打开就自动登录」。
-- 版本检查 / 更新走 GitHub Releases（`win-vX.Y.Z` 资产命名），当前版本取程序集版本。
 
 ## 目录结构
 
@@ -95,7 +40,8 @@ ncrust-winui3/
 └── tools/                    # 开发工具：UIA 验证脚本、接口探针、截图脚本
 ```
 
-## 致谢
+仅供学习交流使用，请支持正版音乐。
+<img width="1436" height="848" alt="image" src="https://github.com/user-attachments/assets/259e2c5b-2b17-41ed-95d5-3998979b1617" />
+<img width="1436" height="848" alt="image" src="https://github.com/user-attachments/assets/d282e5da-12a5-4b92-a0c6-380628203ba1" />
+<img width="1436" height="848" alt="image" src="https://github.com/user-attachments/assets/6f22ca12-c498-438f-8274-5b29b2ad6af7" />
 
-界面、协议与交互规格来自 [GuitaristRin/Ncrust](https://github.com/GuitaristRin/Ncrust)（含 `spec/` 与
-`windows/` 目录）。本仓库是其 Windows 端的 WinUI 3 移植，仅供学习交流使用，请支持正版音乐。
