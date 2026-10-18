@@ -1,0 +1,179 @@
+<Page
+    x:Class="Ncrust.Shell.ShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:player="using:Ncrust.Player"
+    Background="{ThemeResource KBackgroundBrush}">
+
+    <!--
+      外壳（参考 Groove Music / Apple Music）：
+      - 标准汉堡菜单：WinUI 2 NavigationView（Version1 直角样式 + Kanesumi 资源覆盖），
+        按窗口宽度自适应：≥1008 展开 / 600~1008 紧凑（只剩图标）/ <600 最小（只剩汉堡按钮）。
+      - 面板顶部是搜索框（Groove）；分组标题「我的音乐」（Apple Music 的资料库分组）；
+        底部是账户项（未登录时为「登录」）。
+      - 内容延伸进标题栏：AppTitleBar 是拖动区，左侧给返回 / 汉堡按钮让位。
+      - 第二行 72 是播放栏的位置：页面内容不会被播放栏盖住，不需要额外的底部内边距。
+      - 播放器层与登录层覆盖整个窗口，但顶部让出标题栏（标题栏区域的输入被系统拿去拖动窗口）。
+    -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="72" />
+        </Grid.RowDefinitions>
+
+        <muxc:NavigationView
+            x:Name="Nav"
+            Grid.Row="0"
+            AlwaysShowHeader="False"
+            BackRequested="NavBackRequested"
+            CompactModeThresholdWidth="600"
+            DisplayModeChanged="NavDisplayModeChanged"
+            ExpandedModeThresholdWidth="1008"
+            IsBackButtonVisible="Visible"
+            IsBackEnabled="False"
+            IsSettingsVisible="True"
+            IsTitleBarAutoPaddingEnabled="False"
+            ItemInvoked="NavItemInvoked"
+            OpenPaneLength="240"
+            PaneDisplayMode="Auto">
+
+            <muxc:NavigationView.AutoSuggestBox>
+                <AutoSuggestBox
+                    x:Name="SearchBox"
+                    GotFocus="SearchGotFocus"
+                    ItemTemplate="{StaticResource SearchSuggestionTemplate}"
+                    PlaceholderText="搜索歌曲、专辑、歌手"
+                    QueryIcon="Find"
+                    QuerySubmitted="SearchQuerySubmitted"
+                    TextChanged="SearchTextChanged"
+                    TextMemberPath="Title"
+                    UpdateTextOnSelect="False">
+                    <!-- 下拉项横向拉伸：搜索记录行尾的删除键才能贴右边。 -->
+                    <AutoSuggestBox.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </AutoSuggestBox.ItemContainerStyle>
+                </AutoSuggestBox>
+            </muxc:NavigationView.AutoSuggestBox>
+
+            <muxc:NavigationView.MenuItems>
+                <muxc:NavigationViewItem x:Name="HomeItem" Content="首页" Tag="home">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE80F;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <!-- 收藏的音乐：用户收藏相关的入口全部集中在侧边栏。 -->
+                <muxc:NavigationViewItemHeader Content="收藏的音乐" />
+                <muxc:NavigationViewItem x:Name="LikedSongsItem" Content="我喜欢的音乐" Tag="liked">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE734;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem x:Name="AlbumsItem" Content="收藏的专辑" Tag="albums">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE958;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem x:Name="PlaylistsItem" Content="收藏的歌单" Tag="playlists">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8FD;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem x:Name="LocalMusicItem" Content="本地音乐" Tag="local">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8F1;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+            </muxc:NavigationView.MenuItems>
+
+            <muxc:NavigationView.FooterMenuItems>
+                <muxc:NavigationViewItem
+                    x:Name="AccountItem"
+                    Content="登录"
+                    SelectsOnInvoked="False"
+                    Tag="account">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE77B;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+            </muxc:NavigationView.FooterMenuItems>
+
+            <!--
+              内容区顶部是会话失效横幅（InfoBar，Severity=Warning），下面才是页面。
+              登录失效时 account/get 仍回 200，用户只会看到「推荐变了 / 收藏刷不出来」——
+              横幅把「网易的限制」和「Ncrust 的 bug」分开（见 spec/api/entitlement.md）。
+            -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <muxc:InfoBar
+                    x:Name="SessionBar"
+                    Grid.Row="0"
+                    IsClosable="False"
+                    IsOpen="False"
+                    Message="登录已失效，部分歌曲只能试听，推荐与收藏不可用"
+                    Severity="Warning">
+                    <muxc:InfoBar.ActionButton>
+                        <Button Click="SessionBarLoginClick" Content="重新登录" />
+                    </muxc:InfoBar.ActionButton>
+                </muxc:InfoBar>
+
+                <Frame x:Name="ContentFrame" Grid.Row="1" Navigated="ContentFrameNavigated" />
+            </Grid>
+        </muxc:NavigationView>
+
+        <!-- 自定义标题栏：拖动区。左边距随 NavigationView 的显示模式调整，给返回 / 汉堡按钮让位。 -->
+        <Grid
+            x:Name="AppTitleBar"
+            Grid.Row="0"
+            Height="32"
+            VerticalAlignment="Top"
+            Background="{ThemeResource KBackgroundBrush}"
+            Canvas.ZIndex="1">
+            <StackPanel
+                Margin="12,0,0,0"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="12">
+                <Image
+                    Width="16"
+                    Height="16"
+                    Source="ms-appx:///Assets/Square44x44Logo.png" />
+                <TextBlock
+                    x:Name="AppTitle"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{ThemeResource KOnBackgroundBrush}"
+                    Text="Echo" />
+            </StackPanel>
+        </Grid>
+
+        <player:PlayerHost x:Name="Player" Grid.RowSpan="2" />
+
+        <!-- 轻提示（对应 Android Toast）：播放栏上方居中，约 2 秒后淡出；不接收点击。 -->
+        <Border
+            x:Name="NoticeHost"
+            Grid.Row="0"
+            MaxWidth="480"
+            Margin="24,0,24,16"
+            Padding="16,10"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Background="{ThemeResource KSurfaceVariantBrush}"
+            IsHitTestVisible="False"
+            Opacity="0"
+            Visibility="Collapsed">
+            <TextBlock
+                x:Name="NoticeText"
+                Style="{StaticResource BodyTextStyle}"
+                TextWrapping="Wrap" />
+        </Border>
+
+        <Grid x:Name="OverlayHost" Grid.RowSpan="2" />
+    </Grid>
+</Page>

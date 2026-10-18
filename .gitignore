@@ -1,0 +1,25 @@
+# 构建产物
+[Bb]in/
+[Oo]bj/
+*.pdb
+
+# Visual Studio / VS Code
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet 还原产物（还原后重新生成）
+*.nupkg
+packages/
+
+# 打包输出 / 压缩包
+*.zip
+*.msix
+*.msixbundle
+AppPackages/
+
+# 运行期生成
+*.WebView2/
+*.log

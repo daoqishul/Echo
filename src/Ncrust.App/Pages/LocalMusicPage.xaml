@@ -1,0 +1,52 @@
+<Page
+    x:Class="Ncrust.Pages.LocalMusicPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{ThemeResource KBackgroundBrush}">
+
+    <!-- 本地音乐：自动扫描文件夹里的音频文件（标签识别歌名 / 歌手 / 时长），点歌即播。 -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel
+            Margin="24,16,24,8"
+            Orientation="Horizontal"
+            Spacing="8">
+            <TextBlock Style="{StaticResource PageHeadingTextStyle}" Text="本地音乐" />
+            <TextBlock
+                x:Name="FolderText"
+                MaxWidth="420"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextStyle}"
+                TextTrimming="CharacterEllipsis" />
+            <Button
+                VerticalAlignment="Center"
+                Click="PickFolderClick"
+                Content="选择文件夹" />
+            <Button
+                VerticalAlignment="Center"
+                Click="RefreshClick"
+                Content="刷新" />
+        </StackPanel>
+
+        <ListView
+            x:Name="SongList"
+            Grid.Row="1"
+            IsItemClickEnabled="True"
+            ItemClick="SongItemClick"
+            ItemTemplate="{StaticResource SongRowTemplate}"
+            SelectionMode="None" />
+
+        <TextBlock
+            x:Name="EmptyHint"
+            Grid.Row="1"
+            Margin="0,24,0,0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Style="{StaticResource CaptionTextStyle}"
+            Text="正在扫描本地音乐…" />
+    </Grid>
+</Page>

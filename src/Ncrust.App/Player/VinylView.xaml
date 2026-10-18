@@ -1,0 +1,105 @@
+<UserControl
+    x:Class="Ncrust.Player.VinylView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:kc="using:Kanesumi.Xaml.Controls">
+
+    <!--
+      歌词页（原唱片机界面按需求改为纯歌词）：歌词居中（宽度可在设置调整），
+      顶部标题栏，右下角放上一首 / 播放 / 下一首。背景完全不透明（默认遮住主界面）。
+    -->
+    <Grid x:Name="Root" Background="{ThemeResource KBackgroundBrush}">
+
+        <!-- 顶部：标题 / 歌手 + 收起。 -->
+        <Grid
+            Height="48"
+            Margin="16,4,16,0"
+            VerticalAlignment="Top">
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock
+                    x:Name="TitleText"
+                    Style="{StaticResource TitleTextStyle}"
+                    Text="歌词" />
+                <TextBlock
+                    x:Name="ArtistText"
+                    Style="{StaticResource CaptionTextStyle}"
+                    TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <AppBarButton
+                AutomationProperties.Name="收起"
+                HorizontalAlignment="Right"
+                Click="CollapseClick"
+                Style="{StaticResource TransportIconButtonStyle}"
+                ToolTipService.ToolTip="回到卡片 (Esc)"
+                LabelPosition="Collapsed">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" FontSize="16" Glyph="&#xE70D;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+        </Grid>
+
+        <!-- 中间：纯歌词，宽度受设置控制（窄 480 / 标准 640 / 宽 840）。 -->
+        <Grid Margin="48,60,48,76">
+            <Grid
+                x:Name="LyricsHost"
+                MaxWidth="640"
+                HorizontalAlignment="Center">
+                <kc:MetroLyricsPanel x:Name="Lyrics" />
+                <TextBlock
+                    x:Name="LyricsStatus"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource KOnSurfaceVariantBrush}"
+                    Style="{StaticResource BodyLargeTextStyle}"
+                    Text="暂无歌词"
+                    Visibility="Collapsed" />
+            </Grid>
+        </Grid>
+
+        <!-- 右下角：上一首 / 播放 / 下一首。 -->
+        <StackPanel
+            Margin="0,0,24,20"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Orientation="Horizontal"
+            Spacing="12">
+            <AppBarButton
+                AutomationProperties.Name="上一首"
+                Width="44"
+                Height="44"
+                Click="PreviousClick"
+                Style="{StaticResource TransportIconButtonStyle}"
+                ToolTipService.ToolTip="上一首 (Ctrl+←)"
+                LabelPosition="Collapsed">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" FontSize="18" Glyph="&#xE892;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton
+                x:Name="PlayButton"
+                AutomationProperties.Name="播放"
+                Width="56"
+                Height="56"
+                Click="PlayPauseClick"
+                Style="{StaticResource TransportIconButtonStyle}"
+                ToolTipService.ToolTip="播放 / 暂停 (Space)"
+                LabelPosition="Collapsed">
+                <AppBarButton.Icon>
+                    <FontIcon x:Name="PlayIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xE768;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton
+                AutomationProperties.Name="下一首"
+                Width="44"
+                Height="44"
+                Click="NextClick"
+                Style="{StaticResource TransportIconButtonStyle}"
+                ToolTipService.ToolTip="下一首 (Ctrl+→)"
+                LabelPosition="Collapsed">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" FontSize="18" Glyph="&#xE893;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+        </StackPanel>
+    </Grid>
+</UserControl>

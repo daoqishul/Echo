@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    音效组件：CsWinRT 编写的 Windows 运行时组件（WinUI 3 移植版）。
+    MediaPlayer.AddAudioEffect 按「类全名」激活音效；只有 WinRT 组件里的类能被激活。
+    DSP 本身在 Ncrust.Core（Audio/EqualizerProcessor），这里只做 IBasicAudioEffect 的外壳与内存拷贝。
+    非打包应用通过 Ncrust.App 的 app.manifest 里 activatableClass 条目注册激活。
+  -->
+  <PropertyGroup>
+    <!-- Windows 投影来自 TFM 自带的平台目标包（与 Ncrust.App 相同来源，无需显式引用 SDK.NET.Ref）。 -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <RootNamespace>Ncrust.Audio</RootNamespace>
+    <AssemblyName>Ncrust.Audio</AssemblyName>
+    <CsWinRTComponent>true</CsWinRTComponent>
+    <!-- CsWinRT 生成的代码需要 C# 11（Span 常量模式匹配），用 latest。 -->
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <!-- 读写音频缓冲要拿原始指针（IMemoryBufferByteAccess）。 -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!--
+      本机没有安装 Windows SDK（注册表里没有 UnionMetadata），cswinrt.exe 默认会报
+      「Could not find the Windows SDK in the registry」。Windows 元数据 winmd 其实随
+      net8.0-windows 的平台目标包（Microsoft.Windows.SDK.NET.Ref）一起下载到了 NuGet
+      缓存，直接把 cswinrt 的 -input 指过去即可，无需安装整个 SDK。
+    -->
+    <CsWinRTWindowsMetadata>$(NuGetPackageRoot)microsoft.windows.sdk.net.ref\10.0.19041.56\winmd</CsWinRTWindowsMetadata>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ncrust.Core\Ncrust.Core.csproj" />
+  </ItemGroup>
+
+</Project>

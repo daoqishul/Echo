@@ -1,0 +1,86 @@
+<Page
+    x:Class="Ncrust.Pages.AccountPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{ThemeResource KBackgroundBrush}">
+
+    <!-- 独立账户页（侧边栏底部账户入口）：资料 + 登录 / 退出登录，不再占用设置页。 -->
+    <ScrollViewer>
+        <StackPanel
+            MaxWidth="720"
+            Padding="24,16,24,32"
+            HorizontalAlignment="Left"
+            Spacing="8">
+            <TextBlock Style="{StaticResource PageHeadingTextStyle}" Text="账户" />
+
+            <Grid x:Name="AccountLoggedIn" ColumnSpacing="16" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Image
+                    x:Name="AvatarImage"
+                    Width="64"
+                    Height="64"
+                    Stretch="UniformToFill" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="NicknameText" Style="{StaticResource TitleTextStyle}" />
+                    <TextBlock x:Name="UidText" Style="{StaticResource CaptionTextStyle}" />
+                    <TextBlock
+                        x:Name="VipStatusText"
+                        Style="{StaticResource CaptionTextStyle}"
+                        TextWrapping="Wrap"
+                        TextTrimming="None" />
+                </StackPanel>
+                <Button
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Click="LogoutClick"
+                    Content="退出登录" />
+            </Grid>
+
+            <Grid x:Name="AccountLoggedOut" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource BodyTextStyle}" Text="未登录" />
+                    <TextBlock
+                        Style="{StaticResource CaptionTextStyle}"
+                        Text="登录后可以同步喜欢的音乐、收藏与每日推荐，并自动签到。" />
+                </StackPanel>
+                <Button
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Click="LoginClick"
+                    Content="登录"
+                    Style="{StaticResource AccentButtonStyle}" />
+            </Grid>
+
+            <!-- 签到（原设置页功能移到这里） -->
+            <TextBlock Margin="0,24,0,0" Style="{StaticResource TitleTextStyle}" Text="签到" />
+            <TextBlock
+                x:Name="SigninStatus"
+                Style="{StaticResource CaptionTextStyle}"
+                Text="每天签到领积分，自动签到可在下方开关。" />
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ToggleSwitch
+                    x:Name="AutoSigninSwitch"
+                    Header="自动签到"
+                    Toggled="AutoSigninToggled" />
+                <Button
+                    x:Name="SigninNowButton"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Click="SigninNowClick"
+                    Content="立即签到" />
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

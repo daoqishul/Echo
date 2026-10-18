@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Kanesumi 的 XAML 扇区：token、样式、自定义控件、缓动/动画（WinUI 3 移植版）。
+    规格见参考仓库 windows/docs/KANESUMI_XAML.md 与 spec/design/tokens.json。
+    不得引用 Ncrust 的任何代码 —— 保持库独立。
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <RootNamespace>Kanesumi.Xaml</RootNamespace>
+    <AssemblyName>Kanesumi.Xaml</AssemblyName>
+    <UseWinUI>true</UseWinUI>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <!--
+      WinUI 3 类库用 dotnet build 时，XAML 第二遍编译（MarkupCompilePass2）拿不到本程序集
+      （interop.targets 只在 intermediatexaml 存在时给 LocalAssembly，而 SDK 工程不产出它），
+      导致 Themes/Generic.xaml 里的 local: 类型报 WMC0110。这里显式指向 CoreCompile 的产物
+      （pass2 排在编译之后，文件此时已存在）。
+    -->
+    <LocalAssembly Condition="'$(LocalAssembly)' == ''">$(IntermediateOutputPath)$(TargetName)$(TargetExt)</LocalAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260921001" />
+  </ItemGroup>
+
+</Project>
